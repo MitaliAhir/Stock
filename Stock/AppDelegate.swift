@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  Stock
 //
-//  Created by Siddharth Trivedi on 2024-11-25.
+//  Created by Mitali Ahir on 2024-11-25.
 //
 
 import UIKit
