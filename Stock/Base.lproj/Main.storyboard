@@ -65,9 +65,15 @@
                                     <segment title="Watching"/>
                                 </segments>
                                 <color key="selectedSegmentTintColor" systemColor="systemYellowColor"/>
-                                <connections>
-                                    <action selector="stateSegmentValueChanged:" destination="gGX-N8-j1C" eventType="valueChanged" id="o6Z-qn-d8b"/>
-                                </connections>
+                            </segmentedControl>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bordered" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="Qk1-UF-2le">
+                                <rect key="frame" x="86" y="428" width="221" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="Cold"/>
+                                    <segment title="Hot"/>
+                                    <segment title="Very Hot"/>
+                                </segments>
                             </segmentedControl>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="iX8-wV-ycA"/>
@@ -77,16 +83,15 @@
                         <barButtonItem key="rightBarButtonItem" systemItem="save" id="QUj-rb-YrF">
                             <connections>
                                 <action selector="saveBarButtonTapped:" destination="gGX-N8-j1C" id="1nO-Nj-iul"/>
-                                <segue destination="C3F-zJ-Thx" kind="unwind" unwindAction="unwindToHomeWithSegue:" id="TCv-vB-Eli"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="stockRateSegmentControl" destination="Qk1-UF-2le" id="rBO-eR-nn8"/>
                         <outlet property="stockStateSegmentControl" destination="n6d-np-IGs" id="mMq-cG-Gaf"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="onn-vu-Rsp" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-                <exit id="C3F-zJ-Thx" userLabel="Exit" sceneMemberID="exit"/>
             </objects>
             <point key="canvasLocation" x="3692.3664122137402" y="-1.4084507042253522"/>
         </scene>

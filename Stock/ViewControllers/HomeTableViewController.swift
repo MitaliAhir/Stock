@@ -8,15 +8,18 @@
 import UIKit
 import CoreData
 
-class HomeTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
-
+class HomeTableViewController: UITableViewController, NSFetchedResultsControllerDelegate{
+    
     var fetchedResultsController: NSFetchedResultsController<Stock>!
     // Create a context property (can be fetched from your AppDelegate or a container)
-        var context: NSManagedObjectContext!
+    var context: NSManagedObjectContext!
     @IBOutlet var savedStocksTableView: UITableView!
+    
     var savedStocks: [Stock] = []
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //mainVC.delegate = self
         // Initialize Core Data context
         context = CoreDataStack.shared.persistentContainer.viewContext
         // Setup the fetchedResultsController
@@ -25,10 +28,10 @@ class HomeTableViewController: UITableViewController, NSFetchedResultsController
 
     // MARK: - Table view data source
 
-//    override func numberOfSections(in tableView: UITableView) -> Int {
-//        // #warning Incomplete implementation, return the number of sections
-//        return 2
-//    }
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        // #warning Incomplete implementation, return the number of sections
+        return fetchedResultsController.sections?.count ?? 0
+    }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
@@ -40,10 +43,19 @@ class HomeTableViewController: UITableViewController, NSFetchedResultsController
         let cell = tableView.dequeueReusableCell(withIdentifier: "StockCell", for: indexPath)
         let searchResult = fetchedResultsController.object(at: indexPath)
         cell.textLabel?.text = searchResult.name
-        print(searchResult.state)
+        cell.detailTextLabel?.text = "State: \(searchResult.state), Rank: \(searchResult.rank)"
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard let sectionData = fetchedResultsController.sections?[section].name else { return nil }
+        if(sectionData == "0"){
+            return "Active List"
+        }
+        else{
+            return "Watch List"
+        }
+    }
 
     /*
     // Override to support conditional editing of the table view.
@@ -53,17 +65,25 @@ class HomeTableViewController: UITableViewController, NSFetchedResultsController
     }
     */
 
-    /*
+    
     // Override to support editing the table view.
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
+            let stockToBeDeleted = fetchedResultsController.object(at: indexPath)
+            context.delete(stockToBeDeleted)
+            do  {
+                try context.save()
+            }catch{
+                print("Error saving context: \(error.localizedDescription)")
+            }
+            
+            //tableView.deleteRows(at: [indexPath], with: .fade)
         } else if editingStyle == .insert {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
         }    
     }
-    */
+   
 
     /*
     // Override to support rearranging the table view.
@@ -87,7 +107,7 @@ class HomeTableViewController: UITableViewController, NSFetchedResultsController
         fetchedResultsController = NSFetchedResultsController(
             fetchRequest: fetchRequest,
             managedObjectContext: context,
-            sectionNameKeyPath: nil,
+            sectionNameKeyPath: "state",
             cacheName: nil
         )
         fetchedResultsController.delegate = self
@@ -120,13 +140,36 @@ class HomeTableViewController: UITableViewController, NSFetchedResultsController
             break
         }
     }
+    
+    func controller(_ controller: NSFetchedResultsController<any NSFetchRequestResult>, didChange sectionInfo: any NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
+     
+        switch type {
+        case .insert:
+            tableView.insertSections(IndexSet(integer: sectionIndex), with: .automatic)
+        case .delete:
+            tableView.deleteSections(IndexSet(integer: sectionIndex), with: .automatic)
+        default:
+            break
+        }
+    }
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         tableView.endUpdates()
     }
     
     @IBAction func unwindToHome(segue: UIStoryboardSegue) {
-    
-
+        if let sourceVC = segue.source as? MainViewController{
+            sourceVC.didSelectStock = { [weak self] selectedState, selectedRank, tempStock in
+                print("Unwinding back to HomeViewController with state: \(selectedState), rank: \(selectedRank), stock: \(tempStock.name)")
+                CoreDataStack.shared.saveStockFromSearch(state: selectedState, rank: selectedRank, tempStock: tempStock)
+            }
+        }
     }
 }
+//extension HomeTableViewController: MainViewController1Delegate{
+//    func didSelectStock(selectedState: StockState, selectedRank: StockRank, stock: TStock) {
+//        print(stock.name)
+//        CoreDataStack.shared.saveStockFromSearch(state: selectedState, rank: selectedRank, tempStock: stock)
+//    }
+//
+//}

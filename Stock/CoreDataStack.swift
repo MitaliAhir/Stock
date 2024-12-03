@@ -48,6 +48,7 @@ class CoreDataStack {
         if context.hasChanges {
             do {
                 try context.save()
+                print("Context saved successfully")
             } catch {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
@@ -57,17 +58,17 @@ class CoreDataStack {
         }
     }
     
-    func saveStockFromSearch(tempStock: TStock, rank: Int, state: Int) {
+    func saveStockFromSearch(state: StockState, rank: StockRank, tempStock: TStock) {
         //Save - create Stock object
         let context = persistentContainer.viewContext
         let saveStock = Stock(context: context)
         saveStock.name = tempStock.name
         print("In Core Data Name: \(saveStock.name ?? "No Name")")
         saveStock.performanceId = tempStock.performanceId
-        saveStock.state = Int16(state)
-        print("In Core Data State: \(state)")
-        saveStock.rank = Int16(rank)
+        saveStock.state = Int16(state.rawValue)
+        saveStock.rank = Int16(rank.rawValue)
         saveContext()
     }
     
+
 }

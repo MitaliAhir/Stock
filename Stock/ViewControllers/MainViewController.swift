@@ -8,40 +8,68 @@
 import UIKit
 import CoreData
 
+//protocol MainViewControllerDelegate: AnyObject {
+//    func didSelectStock(selectedState: StockState, selectedRank: StockRank, stock: TStock)
+//}
+
 class MainViewController: UIViewController {
     
     @IBOutlet weak var stockStateSegmentControl: UISegmentedControl!
+    @IBOutlet weak var stockRateSegmentControl: UISegmentedControl!
     
     lazy var searchResultTableVC = storyboard?.instantiateViewController(withIdentifier: "SearchResultTVC") as! SearchResultTableViewController
     lazy var searchController = UISearchController(searchResultsController: searchResultTableVC)
     
-    var selectedState = 0
-    var selectedRank = 0
+    //var delegate: MainViewControllerDelegate?
     var tempStock : TStock?
-    // Create a context property (can be fetched from your AppDelegate or a container)
-    var context: NSManagedObjectContext!
+    var didSelectStock: ((StockState, StockRank, TStock) -> Void)? // Closure to pass the data back to HomeViewController
 
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.searchController = searchController
         searchController.searchResultsUpdater = self
         searchResultTableVC.delegate = self
-        
     }// viewDidLoad() ends
   
-    @IBAction func stateSegmentValueChanged(_ sender: UISegmentedControl) {
-        selectedState = sender.selectedSegmentIndex
-        
-    }
-    
+   // Set the state and rank of the stock before unwinding to HomeScreen
     @IBAction func saveBarButtonTapped(_ sender: UIBarButtonItem) {
-        selectedState = stockStateSegmentControl.selectedSegmentIndex
-        if let tempStock = tempStock {
-            CoreDataStack.shared.saveStockFromSearch(tempStock: tempStock, rank: selectedRank, state: selectedState)
-        }
+        // Capture the selected status from the segmented control
+        let selectedState: StockState
+        switch stockStateSegmentControl.selectedSegmentIndex {
+            case 0:
+            selectedState = .active
+            case 1:
+            selectedState = .watchlist
+            default:
+            selectedState = .active
+            }
+                
+            // Capture the selected rank from the rank control
+            let selectedRank: StockRank
+            switch stockRateSegmentControl.selectedSegmentIndex {
+            case 0:
+                selectedRank = .cold
+            case 1:
+                selectedRank = .hot
+            case 2:
+                selectedRank = .veryHot
+            default:
+                selectedRank = .cold
+            }
+        
+        guard let tempStock = tempStock else {
+                print("Error: tempStock is nil.")
+                return
+            }
+        
+       //delegate?.didSelectStock(selectedState: selectedState, selectedRank: selectedRank, stock: tempStock)
+        print("State: \(selectedState)")
+        print("Rank: \(selectedRank)")
+        // Pass the selected values and selected stock back to HomeViewController via closure
+        if let didSelectStock = didSelectStock {
+            didSelectStock(selectedState, selectedRank, tempStock)
+            }
     }
-    
-    
 }
 extension MainViewController: UISearchResultsUpdating {
     //notify us everytime there is an update in search text
@@ -58,7 +86,6 @@ extension MainViewController: UISearchResultsUpdating {
                 }
             }
     }
-        
 }
 extension MainViewController :SearchResultTableViewControllerDelegate{
     func didSelectStock(_ stock: TStock) {
